@@ -11,6 +11,12 @@ defmodule Cmark do
 
   """
 
+  #for {format} <- [:html, :xml, :man, :commonmark, :latex] do
+  #  def unquote(:"to_#{format}") when is_list(data) do
+  #    parse_doc_list(data, [:default], unquote(format))
+  #  end
+  #end
+
   @doc """
   Compiles one or more (list) Markdown documents to HTML and returns result.
 
@@ -143,11 +149,15 @@ defmodule Cmark do
   end
 
   defp parse_doc(document, options) do
-    Cmark.Nif.to_html(document, parse_options(options))
+    to_cmark_nif(document, options, :html)
   end
 
   defp parse_doc(document, callback, options) do
-    callback.(Cmark.Nif.to_html(document, parse_options(options)))
+    callback.(to_cmark_nif(document, options, :html))
+  end
+
+  defp to_cmark_nif(data, options \\ [:default], format \\ :html) do
+    Cmark.Nif.render(data, parse_options(options), parse_format(format))
   end
 
   defp parse_options(options) do
@@ -164,5 +174,17 @@ defmodule Cmark do
     }
 
     Enum.reduce(options, 0, fn(x, acc) -> flags[x] ||| acc end)
+  end
+
+
+  defp parse_format(format) do
+    %{
+      none: 0,
+      html: 1,
+      xml: 2,
+      man: 3,
+      commonmark: 4,
+      latex: 5
+    }[format]
   end
 end
