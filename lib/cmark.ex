@@ -63,8 +63,8 @@ defmodule Cmark do
 
   ## Examples
 
-  iex> Cmark.to_html(~s(Use option to enable "smart" quotes.), [:smart])
-  "<p>Use option to enable “smart” quotes.</p>\\n"
+      iex> Cmark.to_html(~s(Use option to enable "smart" quotes.), [:smart])
+      "<p>Use option to enable “smart” quotes.</p>\\n"
 
   """
 
@@ -84,15 +84,15 @@ defmodule Cmark do
 
   ## Examples
 
-  iex> callback = fn (html) -> "HTML is \#{html}" |> String.strip end
-  iex> "test" |> Cmark.to_html(callback)
-  "HTML is <p>test</p>"
+      iex> callback = fn (html) -> "HTML is \#{html}" |> String.strip end
+      iex> "test" |> Cmark.to_html(callback)
+      "HTML is <p>test</p>"
 
-  iex> callback = fn (htmls) ->
-  iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
-  iex> end
-  iex> ["list", "test"] |> Cmark.to_html(callback)
-  "<p>list</p><hr><p>test</p>"
+      iex> callback = fn (htmls) ->
+      iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
+      iex> end
+      iex> ["list", "test"] |> Cmark.to_html(callback)
+      "<p>list</p><hr><p>test</p>"
 
   """
 
@@ -113,11 +113,11 @@ defmodule Cmark do
 
   ## Examples
 
-  iex> callback = fn (htmls) ->
-  iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
-  iex> end
-  iex> ["en-dash --", "ellipsis..."] |> Cmark.to_html(callback, [:smart])
-  "<p>en-dash –</p><hr><p>ellipsis…</p>"
+      iex> callback = fn (htmls) ->
+      iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
+      iex> end
+      iex> ["en-dash --", "ellipsis..."] |> Cmark.to_html(callback, [:smart])
+      "<p>en-dash –</p><hr><p>ellipsis…</p>"
   """
 
   @formats |> Enum.each fn format ->
@@ -136,9 +136,9 @@ defmodule Cmark do
 
   ## Examples
 
-  iex> callback = fn (html) -> "HTML is \#{html |> String.strip}" end
-  iex> ["list", "test"] |> Cmark.to_html_each(callback)
-  ["HTML is <p>list</p>", "HTML is <p>test</p>"]
+      iex> callback = fn (html) -> "HTML is \#{html |> String.strip}" end
+      iex> ["list", "test"] |> Cmark.to_html_each(callback)
+      ["HTML is <p>list</p>", "HTML is <p>test</p>"]
 
   """
 
