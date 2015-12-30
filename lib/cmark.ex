@@ -11,33 +11,31 @@ defmodule Cmark do
 
   """
 
-  #for {format} <- [:html, :xml, :man, :commonmark, :latex] do
-  #  def unquote(:"to_#{format}") when is_list(data) do
-  #    parse_doc_list(data, [:default], unquote(format))
-  #  end
-  #end
-
   @doc """
   Compiles one or more (list) Markdown documents to HTML and returns result.
 
   ## Examples
 
-      iex> "test" |> Cmark.to_html
-      "<p>test</p>\\n"
+  iex> "test" |> Cmark.to_html
+  "<p>test</p>\\n"
 
-      iex> ["# also works", "* with list", "`of documents`"] |> Cmark.to_html
-      ["<h1>also works</h1>\\n",
-      "<ul>\\n<li>with list</li>\\n</ul>\\n",
-      "<p><code>of documents</code></p>\\n"]
+  iex> ["# also works", "* with list", "`of documents`"] |> Cmark.to_html
+  ["<h1>also works</h1>\\n",
+  "<ul>\\n<li>with list</li>\\n</ul>\\n",
+  "<p><code>of documents</code></p>\\n"]
 
   """
-  def to_html(data) when is_list(data) do
-    parse_doc_list(data, [:default])
+
+  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+    def unquote(:"to_#{format}")(data) when is_list(data) do
+      parse_doc_list(data, [:default], unquote(format))
+    end
+
+    def unquote(:"to_#{format}")(data) when is_bitstring(data) do
+      parse_doc(data, [:default], unquote(format))
+    end
   end
 
-  def to_html(data) when is_bitstring(data) do
-    parse_doc(data, [:default])
-  end
 
   @doc """
   Compiles one or more (list) Markdown documents to HTML using provided options
@@ -50,26 +48,28 @@ defmodule Cmark do
   * `:normalize` - Normalize tree by consolidating adjacent text nodes.
   * `:smart` - Convert straight quotes to curly, --- to em dashes, -- to en dashes.
   * `:validate_utf8` - Validate UTF-8 in the input before parsing, replacing
-     illegal sequences with the replacement character U+FFFD.
+  illegal sequences with the replacement character U+FFFD.
   * `:safe` - Suppress raw HTML and unsafe links (`javascript:`, `vbscript:`,
-    `file:`, and `data:`, except for `image/png`, `image/gif`, `image/jpeg`, or
-    `image/webp` mime types).  Raw HTML is replaced by a placeholder HTML
-    comment. Unsafe links are replaced by empty strings.
+  `file:`, and `data:`, except for `image/png`, `image/gif`, `image/jpeg`, or
+  `image/webp` mime types).  Raw HTML is replaced by a placeholder HTML
+  comment. Unsafe links are replaced by empty strings.
 
 
   ## Examples
 
-      iex> Cmark.to_html(~s(Use option to enable "smart" quotes.), [:smart])
-      "<p>Use option to enable “smart” quotes.</p>\\n"
+  iex> Cmark.to_html(~s(Use option to enable "smart" quotes.), [:smart])
+  "<p>Use option to enable “smart” quotes.</p>\\n"
 
   """
 
-  def to_html(data, options) when is_list(data) and is_list(options) do
-    parse_doc_list(data, options)
-  end
+  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+    def unquote(:"to_#{format}")(data, options) when is_list(data) and is_list(options) do
+      parse_doc_list(data, options, unquote(format))
+    end
 
-  def to_html(data, options) when is_bitstring(data) and is_list(options) do
-    parse_doc(data, options)
+    def unquote(:"to_#{format}")(data, options) when is_bitstring(data) and is_list(options) do
+      parse_doc(data, options, unquote(format))
+    end
   end
 
 
@@ -78,24 +78,28 @@ defmodule Cmark do
 
   ## Examples
 
-      iex> callback = fn (html) -> "HTML is \#{html}" |> String.strip end
-      iex> "test" |> Cmark.to_html(callback)
-      "HTML is <p>test</p>"
+  iex> callback = fn (html) -> "HTML is \#{html}" |> String.strip end
+  iex> "test" |> Cmark.to_html(callback)
+  "HTML is <p>test</p>"
 
-      iex> callback = fn (htmls) ->
-      iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
-      iex> end
-      iex> ["list", "test"] |> Cmark.to_html(callback)
-      "<p>list</p><hr><p>test</p>"
+  iex> callback = fn (htmls) ->
+  iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
+  iex> end
+  iex> ["list", "test"] |> Cmark.to_html(callback)
+  "<p>list</p><hr><p>test</p>"
 
   """
-  def to_html(data, callback) when is_list(data) and is_function(callback) do
-    parse_doc_list(data, callback, [:default])
+
+  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+    def unquote(:"to_#{format}")(data, callback) when is_list(data) and is_function(callback) do
+      parse_doc_list(data, callback, [:default], unquote(format))
+    end
+
+    def unquote(:"to_#{format}")(data, callback) when is_bitstring(data) and is_function(callback) do
+      parse_doc(data, callback, [:default], unquote(format))
+    end
   end
 
-  def to_html(data, callback) when is_bitstring(data) and is_function(callback) do
-    parse_doc(data, callback, [:default])
-  end
 
   @doc """
   Compiles one or more (list) Markdown documents to HTML using provided options
@@ -103,18 +107,21 @@ defmodule Cmark do
 
   ## Examples
 
-      iex> callback = fn (htmls) ->
-      iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
-      iex> end
-      iex> ["en-dash --", "ellipsis..."] |> Cmark.to_html(callback, [:smart])
-      "<p>en-dash –</p><hr><p>ellipsis…</p>"
+  iex> callback = fn (htmls) ->
+  iex>   Enum.map(htmls, &String.strip/1) |> Enum.join("<hr>")
+  iex> end
+  iex> ["en-dash --", "ellipsis..."] |> Cmark.to_html(callback, [:smart])
+  "<p>en-dash –</p><hr><p>ellipsis…</p>"
   """
-  def to_html(data, callback, options) when is_list(data) and is_list(options) do
-    parse_doc_list(data, callback, options)
-  end
 
-  def to_html(data, callback, options) when is_bitstring(data) and is_list(options) do
-    parse_doc(data, callback, options)
+  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+    def unquote(:"to_#{format}")(data, callback, options) when is_list(data) and is_list(options) do
+      parse_doc_list(data, callback, options, unquote(format))
+    end
+
+    def unquote(:"to_#{format}")(data, callback, options) when is_bitstring(data) and is_list(options) do
+      parse_doc(data, callback, options, unquote(format))
+    end
   end
 
   @doc """
@@ -123,37 +130,41 @@ defmodule Cmark do
 
   ## Examples
 
-      iex> callback = fn (html) -> "HTML is \#{html |> String.strip}" end
-      iex> ["list", "test"] |> Cmark.to_html_each(callback)
-      ["HTML is <p>list</p>", "HTML is <p>test</p>"]
+  iex> callback = fn (html) -> "HTML is \#{html |> String.strip}" end
+  iex> ["list", "test"] |> Cmark.to_html_each(callback)
+  ["HTML is <p>list</p>", "HTML is <p>test</p>"]
 
   """
-  def to_html_each(data, callback, options \\ [:default]) when is_list(data) do
-    parse_doc_list_each(data, callback, options)
+
+  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+    def unquote(:"to_#{format}_each")(data, callback, options \\ [:default]) when is_list(data) do
+      parse_doc_list_each(data, callback, options, unquote(format))
+    end
   end
 
-  defp parse_doc_list(documents, options) do
+
+  defp parse_doc_list(documents, options, format) do
     documents
-    |> Enum.map(&Task.async(fn -> parse_doc(&1, options) end))
+    |> Enum.map(&Task.async(fn -> parse_doc(&1, options, format) end))
     |> Enum.map(&Task.await(&1))
   end
 
-  defp parse_doc_list(documents, callback, options) do
-    callback.(parse_doc_list(documents, options))
+  defp parse_doc_list(documents, callback, options, format) do
+    callback.(parse_doc_list(documents, options, format))
   end
 
-  defp parse_doc_list_each(documents, callback, options) do
+  defp parse_doc_list_each(documents, callback, options, format) do
     documents
-    |> Enum.map(&Task.async(fn -> parse_doc(&1, callback, options) end))
+    |> Enum.map(&Task.async(fn -> parse_doc(&1, callback, options, format) end))
     |> Enum.map(&Task.await(&1))
   end
 
-  defp parse_doc(document, options) do
-    to_cmark_nif(document, options, :html)
+  defp parse_doc(document, options, format) do
+    to_cmark_nif(document, options, format)
   end
 
-  defp parse_doc(document, callback, options) do
-    callback.(to_cmark_nif(document, options, :html))
+  defp parse_doc(document, callback, options, format) do
+    callback.(to_cmark_nif(document, options, format))
   end
 
   defp to_cmark_nif(data, options \\ [:default], format \\ :html) do
