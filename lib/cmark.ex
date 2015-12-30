@@ -8,25 +8,31 @@ defmodule Cmark do
   * `to_html/2`
   * `to_html/3`
   * `to_html_each/3`
+  * `to_latex/1`
+  * `to_latex/2`
+  * `to_latex/3`
+  * `to_latex_each/3`
 
   """
+
+  @formats [:html, :xml, :man, :commonmark, :latex]
 
   @doc """
   Compiles one or more (list) Markdown documents to HTML and returns result.
 
   ## Examples
 
-  iex> "test" |> Cmark.to_html
-  "<p>test</p>\\n"
+      iex> "test" |> Cmark.to_html
+      "<p>test</p>\\n"
 
-  iex> ["# also works", "* with list", "`of documents`"] |> Cmark.to_html
-  ["<h1>also works</h1>\\n",
-  "<ul>\\n<li>with list</li>\\n</ul>\\n",
-  "<p><code>of documents</code></p>\\n"]
+      iex> ["# also works", "* with list", "`of documents`"] |> Cmark.to_html
+      ["<h1>also works</h1>\\n",
+      "<ul>\\n<li>with list</li>\\n</ul>\\n",
+      "<p><code>of documents</code></p>\\n"]
 
   """
 
-  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+  @formats |> Enum.each fn format ->
     def unquote(:"to_#{format}")(data) when is_list(data) do
       parse_doc_list(data, [:default], unquote(format))
     end
@@ -62,7 +68,7 @@ defmodule Cmark do
 
   """
 
-  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+  @formats |> Enum.each fn format ->
     def unquote(:"to_#{format}")(data, options) when is_list(data) and is_list(options) do
       parse_doc_list(data, options, unquote(format))
     end
@@ -90,7 +96,7 @@ defmodule Cmark do
 
   """
 
-  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+  @formats |> Enum.each fn format ->
     def unquote(:"to_#{format}")(data, callback) when is_list(data) and is_function(callback) do
       parse_doc_list(data, callback, [:default], unquote(format))
     end
@@ -114,7 +120,7 @@ defmodule Cmark do
   "<p>en-dash –</p><hr><p>ellipsis…</p>"
   """
 
-  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+  @formats |> Enum.each fn format ->
     def unquote(:"to_#{format}")(data, callback, options) when is_list(data) and is_list(options) do
       parse_doc_list(data, callback, options, unquote(format))
     end
@@ -136,7 +142,7 @@ defmodule Cmark do
 
   """
 
-  [:html, :xml, :man, :commonmark, :latex] |> Enum.each fn format ->
+  @formats |> Enum.each fn format ->
     def unquote(:"to_#{format}_each")(data, callback, options \\ [:default]) when is_list(data) do
       parse_doc_list_each(data, callback, options, unquote(format))
     end
